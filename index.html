@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101321">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pocket Video AI">
+  <meta name="description" content="Локальный видеоредактор с титрами и экспериментальным ИИ для iPhone">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>Pocket Video AI</title>
+  <style>
+    :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; --bg:#0b0f19; --panel:#161c2b; --line:#293143; --text:#f1f5ff; --muted:#aeb7ca; --brand:#8278ff; --positive:#35c9a3; }
+    *{box-sizing:border-box} html{background:var(--bg)} body{margin:0;color:var(--text);background:linear-gradient(160deg,#151a2f,var(--bg) 270px);min-height:100svh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+    main{max-width:730px;margin:0 auto;padding:18px 15px 55px} header{display:flex;align-items:center;gap:12px;margin:8px 0 18px} h1{font-size:23px;margin:0;letter-spacing:-.7px} h2{font-size:17px;margin:0 0 13px} .subtitle{font-size:12px;color:var(--muted);margin:3px 0 0}
+    .app-icon{background:linear-gradient(125deg,#968fff,#526ee7);height:46px;width:46px;border-radius:15px;display:grid;place-items:center;font-size:24px}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:15px;box-shadow:0 14px 30px #0002}
+    label{display:block;margin:12px 0 6px;font-size:13px;color:var(--muted)} textarea,input[type=text],select{width:100%;border-radius:11px;border:1px solid #3a4560;background:#101625;color:var(--text);font-size:16px;padding:12px;outline:none} textarea{min-height:78px;resize:vertical}
+    input[type=file]{width:100%;padding:13px;border:1px dashed #677198;border-radius:12px;color:var(--muted);background:#0d1425}
+    .btn{appearance:none;border:0;background:linear-gradient(140deg,#8b7bff,#6477ed);color:#fff;padding:13px 16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;min-height:45px}
+    .btn:disabled{opacity:.4;cursor:default}.btn.secondary{background:#293149;color:#f2f4ff}.btn.ghost{background:transparent;border:1px solid #3d4864;color:#dce3f9}.btn.slim{padding:8px 11px;min-height:33px;font-size:13px}
+    .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.actions>*{flex:1}.hint{font-size:12px;color:var(--muted);line-height:1.48}.status{font-size:13px;color:#b0f4e0;margin-top:11px;white-space:pre-line}
+    canvas{width:100%;aspect-ratio:9/16;border-radius:14px;display:block;background:#0e1626;max-height:58svh;object-fit:contain;margin:auto}
+    .previewFrame{background:#090d17;border-radius:15px;padding:12px;display:flex;justify-content:center;align-items:center}
+    .previewFrame canvas{width:auto;max-width:100%;height:min(52svh,540px)}
+    .media{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}.media:last-child{border:none}.thumb{width:66px;height:76px;flex-shrink:0;border-radius:9px;object-fit:cover;background:#242a40}.media-body{min-width:0;flex:1}.fname{font-size:12px;color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;margin-bottom:6px}.media input[type=text]{font-size:13px;padding:8px}.reorder{display:flex;gap:5px;flex-shrink:0;flex-direction:column}.reorder button{border:1px solid #45516d;background:#212a40;border-radius:8px;color:white;width:33px;height:27px}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.pill{font-size:11px;background:#283950;color:#d5efff;padding:6px 9px;border-radius:100px}.privacy{color:#98dbcc}.exportlinks{display:none;margin-top:13px}.exportlinks.active{display:flex;flex-direction:column;gap:8px}.exportlinks a{text-align:center;text-decoration:none}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:365px){.two{grid-template-columns:1fr}.actions{flex-direction:column}}
+    small{font-size:12px} a{color:#b7b0ff} progress{width:100%;height:10px;margin-top:10px;accent-color:var(--brand)}
+  </style>
+</head>
+<body>
+<main>
+  <header><div class="app-icon">▶</div><div><h1>Pocket Video AI</h1><p class="subtitle">Локальная видеостудия · iPhone</p></div></header>
+  <div class="panel"><div class="row"><span class="pill">Без загрузки фото на сервер</span><span class="pill">MP4 · портрет 9:16</span></div>
+    <label for="idea">Тема видеоролика</label>
+    <textarea id="idea" placeholder="Например: Моя поездка в Амстердам. Атмосферный ролик, радость и красивые виды."></textarea>
+    <div class="actions"><button id="template" class="btn secondary">✨ Подобрать титры</button><button id="ai" class="btn ghost">🧠 ИИ-титры (эксперимент)</button></div>
+    <p class="hint">«Подобрать титры» работает без нейросети. Кнопка «ИИ-титры» пытается один раз загрузить модель Qwen в память Safari; это экспериментальная функция и может не заработать на конкретной версии iOS. Модель нужна только для текста, не для генерации видеокадров.</p>
+    <div id="aiStatus" class="status" aria-live="polite"></div>
+  </div>
+  <div class="panel"><h2>1. Добавь фотографии и видеоклипы</h2>
+    <input id="files" type="file" accept="image/*,video/*" multiple>
+    <p class="hint">Лучше начать с 3–5 фотографий. Фото показываются по 3 секунды, видео — до 6 секунд. Видео используется без исходного звука. HEIC работает, если его поддерживает Safari.</p>
+    <div id="mediaList" aria-live="polite"></div>
+  </div>
+  <div class="panel"><h2>2. Настрой ролик</h2>
+    <div class="two"><div><label for="photoSec">Секунд на фотографию</label><select id="photoSec"><option value="2">2 сек.</option><option value="3" selected>3 сек.</option><option value="4">4 сек.</option><option value="5">5 сек.</option></select></div><div><label for="outputSize">Разрешение</label><select id="outputSize"><option value="540">540 × 960 (быстрее)</option><option value="720" selected>720 × 1280</option></select></div></div>
+    <label for="endTitle">Финальная надпись (необязательно)</label><input id="endTitle" type="text" placeholder="Продолжение следует…">
+  </div>
+  <div class="panel"><h2>3. Предпросмотр и сохранение</h2>
+    <div class="previewFrame"><canvas id="canvas" width="720" height="1280"></canvas></div>
+    <div class="actions"><button id="preview" class="btn secondary">▶ Предпросмотр кадра</button><button id="export" class="btn">Создать MP4</button></div>
+    <progress id="progress" max="100" value="0" style="display:none"></progress><div id="status" class="status" aria-live="polite">Добавь материалы для начала.</div>
+    <div id="exportlinks" class="exportlinks"><a id="download" class="btn" href="#">⬇️ Сохранить видео</a><button id="share" class="btn secondary">Поделиться через iPhone</button></div>
+    <p class="hint">Экспорт происходит в реальном времени. Не блокируй экран и не сворачивай приложение до окончания. Готовый файл появится ниже; его можно сохранить в «Файлы» или «Фото» через меню «Поделиться».</p>
+  </div>
+  <div class="panel"><h2>Офлайн-режим и приватность</h2><p class="hint privacy">Фотографии, клипы и итоговое видео обрабатываются на устройстве. Для первого открытия приложения и загрузки экспериментальной ИИ-модели нужен интернет. Файлы не отправляются на наш сервер. Браузер вправе очистить кэш, поэтому офлайн-работа модели не гарантируется после очистки данных Safari.</p>
+  </div>
+</main>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id), list=$('mediaList'), canvas=$('canvas'), ctx=canvas.getContext('2d',{alpha:false});
+const state={items:[],exportUrl:null,exportFile:null,busy:false, generator:null};
+const esc=str=>String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const setStatus=s=>{$('status').textContent=s};
+function addItem(file){let type=file.type.startsWith('image/')?'image':file.type.startsWith('video/')?'video':null;if(!type)return;const url=URL.createObjectURL(file);state.items.push({file,type,url,caption:''});}
+$('files').addEventListener('change',e=>{Array.from(e.target.files||[]).forEach(addItem);e.target.value='';renderList();drawCover();setStatus(`Добавлено материалов: ${state.items.length}.`)});
+function renderList(){list.replaceChildren();state.items.forEach((m,i)=>{const div=document.createElement('div');div.className='media';div.innerHTML=`<div class="media-body"><div class="fname">${i+1}. ${esc(m.file.name)} · ${m.type==='image'?'фото':'видео'}</div><input type="text" aria-label="Титр для файла ${i+1}" placeholder="Титр на этом кадре" value="${esc(m.caption)}"></div><div class="reorder"><button aria-label="Вверх">↑</button><button aria-label="Вниз">↓</button><button aria-label="Удалить">×</button></div>`;
+const thumb=document.createElement(m.type==='image'?'img':'video');thumb.className='thumb';thumb.src=m.url;if(m.type==='video'){thumb.muted=true;thumb.playsInline=true;thumb.preload='metadata';}div.prepend(thumb);
+div.querySelector('input').addEventListener('input',e=>m.caption=e.target.value);const buttons=div.querySelectorAll('button');buttons[0].onclick=()=>move(i,-1);buttons[1].onclick=()=>move(i,1);buttons[2].onclick=()=>{URL.revokeObjectURL(m.url);state.items.splice(i,1);renderList();drawCover();};list.appendChild(div);});}
+function move(i,dir){const target=i+dir;if(target<0||target>=state.items.length)return;[state.items[i],state.items[target]]=[state.items[target],state.items[i]];renderList();drawCover();}
+function fallbackCaptions(){const idea=$('idea').value.trim();const words=idea.replace(/[.!?]/g,'').split(/\s+/).filter(Boolean);const keyword=words.slice(0,5).join(' ')||'Моя история';const templates=[keyword,'Каждый момент особенный','Красота в деталях','Запомним эти мгновения','Это только начало'];state.items.forEach((it,i)=>it.caption=templates[i%templates.length]);renderList();drawCover();$('aiStatus').textContent='Титры подобраны по шаблону — без нейросети.';}
+$('template').onclick=fallbackCaptions;
+$('ai').onclick=async()=>{if(!state.items.length){$('aiStatus').textContent='Сначала добавь фотографии или видео.';return;}if(!('gpu' in navigator)){$('aiStatus').textContent='WebGPU недоступен в Safari. Используй кнопку шаблонных титров.';return;}
+$('ai').disabled=true;$('aiStatus').textContent='Подключаю локальную модель. При первом запуске загружается большой файл (сотни мегабайт). Оставь Safari открытым.';
+try{if(!state.generator){const {pipeline,env}=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/+esm');env.useBrowserCache=true;state.generator=await pipeline('text-generation','onnx-community/Qwen2.5-0.5B-Instruct',{device:'webgpu',dtype:'q4',progress_callback:p=>{if(typeof p.progress==='number')$('aiStatus').textContent=`Загружаю модель: ${Math.floor(p.progress)}% (${p.file||''})`;}});}
+$('aiStatus').textContent='Нейросеть готовит титры локально…';const n=Math.min(state.items.length,8);const messages=[{role:'system',content:'Ты пишешь короткие видеотитры на русском языке. Отвечай только пронумерованным списком. Один титр — не больше 6 слов.'},{role:'user',content:`Тема ролика: ${$('idea').value||'Личная история'}. Напиши ровно ${n} разных позитивных титров, по одному в строке.`}];const out=await state.generator(messages,{max_new_tokens:150,do_sample:false});const gen=out[0]?.generated_text;const raw=Array.isArray(gen)?gen[gen.length-1]?.content:gen;const lines=String(raw||'').split(/\n/).map(s=>s.replace(/^\s*\d+[.)-]\s*/,'').trim()).filter(Boolean);if(!lines.length)throw Error('Модель не вернула титры');state.items.slice(0,n).forEach((it,i)=>it.caption=lines[i%lines.length].slice(0,90));renderList();drawCover();$('aiStatus').textContent='ИИ-титры созданы на устройстве. Их можно изменить вручную.';
+}catch(err){$('aiStatus').textContent=`Локальная модель не запустилась: ${err.message||err}. Монтаж всё равно доступен; используй шаблонные титры.`;}finally{$('ai').disabled=false;}};
+function cover(src,zoom=1){const w=canvas.width,h=canvas.height;const sw=src.videoWidth||src.naturalWidth||src.width,sh=src.videoHeight||src.naturalHeight||src.height;if(!sw||!sh)return;const scale=Math.max(w/sw,h/sh)*zoom;const dw=sw*scale,dh=sh*scale;ctx.drawImage(src,(w-dw)/2,(h-dh)/2,dw,dh);}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+function textWrap(text,maxWidth,fontSize){ctx.font=`700 ${fontSize}px -apple-system, system-ui, sans-serif`;const words=text.trim().split(/\s+/).filter(Boolean);const lines=[];let current='';for(const word of words){const next=current?current+' '+word:word;if(ctx.measureText(next).width>maxWidth&&current){lines.push(current);current=word;}else current=next;}if(current)lines.push(current);return lines.slice(0,5);}
+function drawTitle(title){if(!title)return;const w=canvas.width,h=canvas.height;const fontSize=Math.round(w*.061);const lines=textWrap(title,w*.82,fontSize);ctx.save();const height=lines.length*fontSize*1.26+Math.round(w*.10),y=h*.76-height/2;ctx.fillStyle='rgba(5,8,18,.66)';roundRect(w*.07,y,w*.86,height,20);ctx.fill();ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`700 ${fontSize}px -apple-system, system-ui, sans-serif`;lines.forEach((line,i)=>ctx.fillText(line,w/2,y+height/2+(i-(lines.length-1)/2)*fontSize*1.25,w*.79));ctx.restore();}
+function drawBackground(){ctx.fillStyle='#111a2b';ctx.fillRect(0,0,canvas.width,canvas.height);const gr=ctx.createLinearGradient(0,0,canvas.width,canvas.height);gr.addColorStop(0,'#8278ff');gr.addColorStop(1,'#20b6a0');ctx.fillStyle=gr;ctx.fillRect(0,0,canvas.width,canvas.height);}
+function drawCover(){drawBackground();ctx.fillStyle='white';ctx.textAlign='center';ctx.font=`700 ${Math.round(canvas.width*.08)}px system-ui`;ctx.fillText('Pocket Video AI',canvas.width/2,canvas.height/2);ctx.font=`${Math.round(canvas.width*.04)}px system-ui`;ctx.fillText('Твоя локальная видеостудия',canvas.width/2,canvas.height/2+60);}
+async function imageEl(url){const img=new Image();img.src=url;await img.decode();return img;}
+async function waitEvent(el,event,timeout=18000){return new Promise((resolve,reject)=>{let done=false;const cleanup=()=>{clearTimeout(id);el.removeEventListener(event,yes);el.removeEventListener('error',no)};const yes=()=>{if(done)return;done=true;cleanup();resolve();};const no=()=>{if(done)return;done=true;cleanup();reject(Error('Ошибка чтения видео'))};const id=setTimeout(()=>{if(done)return;done=true;cleanup();reject(Error('Превышено время ожидания видео'))},timeout);el.addEventListener(event,yes,{once:true});el.addEventListener('error',no,{once:true});});}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function animationFrame(){return new Promise(r=>requestAnimationFrame(r))}
+async function renderImage(m,duration){const img=await imageEl(m.url);const start=performance.now();const ms=duration*1000;while(performance.now()-start<ms){const t=Math.min(1,(performance.now()-start)/ms);drawBackground();cover(img,1+.04*t);drawTitle(m.caption);await animationFrame();}}
+async function renderVideo(m,maxDuration){const video=document.createElement('video');video.playsInline=true;video.muted=true;video.autoplay=false;video.preload='auto';video.src=m.url;try{await waitEvent(video,'loadedmetadata');const duration=Math.max(.2,Math.min(maxDuration,Number.isFinite(video.duration)?video.duration:maxDuration));await video.play();const start=performance.now();while(performance.now()-start<duration*1000&&!video.ended){drawBackground();if(video.readyState>=2)cover(video,1);drawTitle(m.caption);await animationFrame();}}finally{video.pause();video.removeAttribute('src');video.load();}}
+function mimeSupported(){if(!window.MediaRecorder)return null;const arr=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp9','video/webm'];return arr.find(x=>MediaRecorder.isTypeSupported(x))||null;}
+$('preview').onclick=async()=>{if(!state.items.length){drawCover();return;}try{const m=state.items[0];drawBackground();if(m.type==='image'){cover(await imageEl(m.url));}else{const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='metadata';v.src=m.url;await waitEvent(v,'loadeddata');cover(v);v.removeAttribute('src');v.load();}drawTitle(m.caption);}catch(e){setStatus('Не удалось показать первый кадр: '+e.message);}};
+$('export').onclick=async()=>{if(state.busy)return;if(!state.items.length){setStatus('Сначала добавь фотографии или видео.');return;}const mime=mimeSupported();if(!mime){setStatus('Этот браузер не поддерживает запись MP4/WebM из canvas. Обнови iOS и открой сайт через Safari.');return;}
+state.busy=true;$('export').disabled=true;$('preview').disabled=true;$('exportlinks').classList.remove('active');$('progress').style.display='block';$('progress').value=0;canvas.width=+$('outputSize').value;canvas.height=Math.round(canvas.width*16/9);drawBackground();let recorder,stream;
+try{stream=canvas.captureStream(15);let parts=[];recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:2400000});const ended=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{if(e.data?.size)parts.push(e.data)};recorder.onerror=e=>reject(e.error||Error('Ошибка кодирования'));recorder.onstop=()=>resolve();});recorder.start(1000);const photoSecs=+$('photoSec').value;const total=state.items.reduce((sum,m)=>sum+(m.type==='image'?photoSecs:6),0)+($('endTitle').value?2:0);let elapsed=0;for(let i=0;i<state.items.length;i++){const m=state.items[i];setStatus(`Кодирую сцену ${i+1} из ${state.items.length}… Не выключай экран.`);if(m.type==='image')await renderImage(m,photoSecs);else await renderVideo(m,6);elapsed+=m.type==='image'?photoSecs:6;$('progress').value=Math.min(95,elapsed/total*100);}if($('endTitle').value.trim()){await renderImageFromText($('endTitle').value.trim(),2);}recorder.stop();await ended;const effectiveType=recorder.mimeType||mime;const blob=new Blob(parts,{type:effectiveType});if(blob.size<1024)throw Error('Видеофайл получился пустым');if(state.exportUrl)URL.revokeObjectURL(state.exportUrl);state.exportUrl=URL.createObjectURL(blob);const extension=effectiveType.includes('webm')?'webm':'mp4';state.exportFile=new File([blob],`PocketVideoAI-${Date.now()}.${extension}`,{type:effectiveType});$('download').href=state.exportUrl;$('download').download=state.exportFile.name;$('download').textContent=`⬇️ Скачать ${extension.toUpperCase()} (${(blob.size/1024/1024).toFixed(1)} МБ)`;$('exportlinks').classList.add('active');$('progress').value=100;setStatus('Видео готово! Сохрани через «Скачать» или «Поделиться».');
+}catch(err){try{if(recorder&&recorder.state!=='inactive')recorder.stop();}catch{}setStatus('Экспорт не завершился: '+(err.message||err)+'. Уменьши разрешение или количество клипов.');}finally{if(stream)stream.getTracks().forEach(t=>t.stop());state.busy=false;$('export').disabled=false;$('preview').disabled=false;}}
+async function renderImageFromText(title,seconds){const start=performance.now();while(performance.now()-start<seconds*1000){drawBackground();drawTitle(title);await animationFrame();}}
+$('share').onclick=async()=>{if(!state.exportFile)return;try{if(navigator.canShare?.({files:[state.exportFile]})){await navigator.share({files:[state.exportFile],title:'Pocket Video AI'});}else{setStatus('Нажми «Скачать», затем открой видео в «Файлах» и используй «Поделиться».');}}catch(e){if(e.name!=='AbortError')setStatus('Не удалось открыть меню «Поделиться»: '+e.message);}};
+if('serviceWorker' in navigator&&/^https:|localhost/.test(location.protocol+location.hostname)){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+drawCover();
+})();
+</script>
+</body>
+</html>
